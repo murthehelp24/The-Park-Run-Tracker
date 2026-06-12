@@ -11,7 +11,7 @@ import { ERROR_MSG } from '../utils/constants.js';
  *    - ไม่มี → สร้าง RunSession ใหม่ (เริ่มวิ่ง)
  *    - มี → บันทึก Lap ใหม่ พร้อมคำนวณเวลา
  */
-export const processScan = async (uid) => {
+export const processScan = async (uid, timestamp) => {
   // 1. ค้นหาสายรัดข้อมือ
   const wristband = await prisma.wristband.findUnique({
     where: { uid },
@@ -31,7 +31,7 @@ export const processScan = async (uid) => {
   }
 
   const userId = wristband.userId;
-  const now = dayjs();
+  const now = timestamp ? dayjs(timestamp) : dayjs();
 
   // 2. ค้นหา Session ที่เปิดอยู่ (endTime === null)
   const activeSession = await prisma.runSession.findFirst({

@@ -10,13 +10,13 @@ import { HTTP_STATUS, ERROR_MSG, SUCCESS_MSG } from '../utils/constants.js';
  */
 export const processScan = async (req, res, next) => {
   try {
-    const { uid } = req.body;
+    const { uid, timestamp } = req.body;
 
     if (!uid) {
       return error(res, ERROR_MSG.SCAN_UID_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
-    const result = await scanService.processScan(uid);
+    const result = await scanService.processScan(uid, timestamp);
 
     // ส่ง Event ผ่าน Socket.io ไปยัง Frontend
     const io = getIO();

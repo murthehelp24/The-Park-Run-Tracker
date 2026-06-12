@@ -28,3 +28,7 @@ pnpm-debug.log*
 
 # Gemini
 .gemini/
+
+architecture_design.md
+frontend_design.md
+presentation_guide.md

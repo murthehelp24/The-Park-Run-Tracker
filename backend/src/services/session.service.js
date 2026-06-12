@@ -51,3 +51,30 @@ export const getLapsBySession = async (sessionId) => {
     laps: formattedLaps,
   };
 };
+
+/**
+ * บันทึกจบการวิ่งของ User (อัปเดต endTime)
+ */
+export const finishActiveSession = async (userId) => {
+  const activeSession = await prisma.runSession.findFirst({
+    where: {
+      userId,
+      endTime: null,
+    },
+  });
+
+  if (!activeSession) {
+    const err = new Error('ไม่พบเซสชันการวิ่งที่กำลังทำงานอยู่');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const updatedSession = await prisma.runSession.update({
+    where: { id: activeSession.id },
+    data: {
+      endTime: new Date(),
+    },
+  });
+
+  return updatedSession;
+};

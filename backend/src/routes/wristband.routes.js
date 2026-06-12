@@ -10,4 +10,7 @@ router.post('/assign', authenticate, wristbandController.assign);
 // GET /api/wristband/:userId — ดูสายรัดข้อมือของ User (ต้องล็อกอินก่อน)
 router.get('/:userId', authenticate, wristbandController.getByUser);
 
+// DELETE /api/wristband/:uid — ลบสายรัดข้อมือของ User (ต้องล็อกอินก่อน)
+router.delete('/:uid', authenticate, wristbandController.remove);
+
 export default router;

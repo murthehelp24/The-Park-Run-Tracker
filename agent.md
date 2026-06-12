@@ -17,10 +17,10 @@ Phase 1        Phase 2        Phase 3        Phase 4        Phase 5        Phase
 |-----|------|-------|-----------------|
 | 1 | วางแผนและออกแบบระบบ | ✅ เสร็จแล้ว | วิเคราะห์ความต้องการ, ออกแบบ ER Diagram, เลือก Tech Stack |
 | 2 | ตั้งค่าฐานข้อมูลและ Prisma | ✅ เสร็จแล้ว | สร้าง Schema, Migration, ทดสอบการเชื่อมต่อ PostgreSQL |
-| 3 | พัฒนา Backend API | 🔲 ยังไม่เริ่ม | สร้าง Express Server, เขียน API ทั้งหมด, ระบบ Auth |
-| 4 | พัฒนา Frontend (React) | 🔲 ยังไม่เริ่ม | สร้างหน้าจอทั้งหมด, ระบบ Routing, เรียก API |
-| 5 | เชื่อมต่อ Real-time (Socket.io) | 🔲 ยังไม่เริ่ม | เชื่อม Frontend-Backend แบบ Real-time |
-| 6 | ทดสอบ, แก้บัก และ Deploy | 🔲 ยังไม่เริ่ม | ทดสอบทุกฟีเจอร์, แก้บัก, เตรียม Deploy |
+| 3 | พัฒนา Backend API | ✅ เสร็จแล้ว | สร้าง Express Server, เขียน API ทั้งหมด, ระบบ Auth |
+| 4 | พัฒนา Frontend (React) | ✅ เสร็จแล้ว | สร้างหน้าจอทั้งหมด, ระบบ Routing, เรียก API |
+| 5 | เชื่อมต่อ Real-time (Socket.io) | ✅ เสร็จแล้ว | เชื่อม Frontend-Backend แบบ Real-time |
+| 6 | ทดสอบ, แก้บัก และ Deploy | ⏳ กำลังดำเนินการ | ทดสอบทุกฟีเจอร์, แก้บัก, เตรียม Deploy |
 
 ---
 

@@ -1,6 +1,7 @@
 import * as sessionService from '../services/session.service.js';
 import { success, error } from '../utils/apiResponse.js';
 import { HTTP_STATUS, ERROR_MSG } from '../utils/constants.js';
+import { getIO } from '../config/socket.js';
 
 /**
  * GET /api/sessions/:userId
@@ -35,6 +36,25 @@ export const getLapsBySession = async (req, res, next) => {
 
     const result = await sessionService.getLapsBySession(sessionId);
     return success(res, result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /api/sessions/active/finish
+ * บันทึกจบเซสชันการวิ่งที่กำลังรันอยู่ของผู้ใช้งานที่ล็อกอิน
+ */
+export const finishActiveSession = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const session = await sessionService.finishActiveSession(userId);
+
+    // ส่ง Event แจ้งเตือนการจบเซสชันวิ่งไปยัง Socket.io
+    const io = getIO();
+    io.emit('session-finished', { userId, session });
+
+    return success(res, session, 'บันทึกประวัติการวิ่งเรียบร้อยแล้ว');
   } catch (err) {
     next(err);
   }

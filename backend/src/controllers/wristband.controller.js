@@ -8,7 +8,8 @@ import { HTTP_STATUS, ERROR_MSG, SUCCESS_MSG } from '../utils/constants.js';
  */
 export const assign = async (req, res, next) => {
   try {
-    const { uid, userId } = req.body;
+    const { uid } = req.body;
+    const userId = req.body.userId || req.user?.userId;
 
     if (!uid || !userId) {
       return error(res, ERROR_MSG.MISSING_FIELDS, HTTP_STATUS.BAD_REQUEST);
@@ -35,6 +36,26 @@ export const getByUser = async (req, res, next) => {
 
     const wristbands = await wristbandService.getByUser(userId);
     return success(res, wristbands);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * DELETE /api/wristband/:uid
+ * ลบสายรัดข้อมือของ User
+ */
+export const remove = async (req, res, next) => {
+  try {
+    const { uid } = req.params;
+    const userId = req.user.userId;
+
+    if (!uid) {
+      return error(res, ERROR_MSG.MISSING_FIELDS, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    await wristbandService.deleteWristband(uid, userId);
+    return success(res, null, 'ลบสายรัดข้อมือสำเร็จ');
   } catch (err) {
     next(err);
   }

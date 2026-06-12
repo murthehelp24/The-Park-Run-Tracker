@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSessionsAPI, getSessionLapsAPI } from '../services/api';
+import { getSessionsAPI, getSessionLapsAPI, simulateScanAPI, finishSessionAPI } from '../services/api';
 import { initiateSocketConnection, disconnectSocket } from '../services/socket';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, wristband } = useAuth();
   const [activeSession, setActiveSession] = useState(null);
   const [laps, setLaps] = useState([]);
   const [lapSeconds, setLapSeconds] = useState(0);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [personalBestMsg, setPersonalBestMsg] = useState('');
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simError, setSimError] = useState('');
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const timerRef = useRef(null);
 
@@ -101,11 +104,21 @@ const Dashboard = () => {
       }
     });
 
+    socket.on('session-finished', (data) => {
+      if (data.userId === user.id) {
+        setActiveSession(null);
+        setLaps([]);
+        setLapSeconds(0);
+        setPersonalBestMsg('');
+      }
+    });
+
     return () => {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('session-started');
       socket.off('new-lap');
+      socket.off('session-finished');
       disconnectSocket();
     };
   }, [user]);
@@ -144,6 +157,38 @@ const Dashboard = () => {
   const getLastLapTime = () => {
     if (laps.length === 0) return 0;
     return laps[laps.length - 1].lapDuration;
+  };
+
+  const handleSimulateScan = async () => {
+    if (!wristband) return;
+    setIsSimulating(true);
+    setSimError('');
+    try {
+      await simulateScanAPI(wristband.uid);
+    } catch (err) {
+      console.error("Failed to simulate scan:", err);
+      setSimError(err.response?.data?.message || 'การจำลองสแกนล้มเหลว');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
+  const handleFinishSession = async () => {
+    if (!activeSession) return;
+    setIsFinishing(true);
+    try {
+      const res = await finishSessionAPI();
+      if (res.success) {
+        setActiveSession(null);
+        setLaps([]);
+        setLapSeconds(0);
+        setPersonalBestMsg('');
+      }
+    } catch (err) {
+      console.error("Failed to finish session:", err);
+    } finally {
+      setIsFinishing(false);
+    }
   };
 
   if (loading) {
@@ -221,8 +266,23 @@ const Dashboard = () => {
                 <div className="flex justify-center mt-1">
                   <span className={`material-symbols-outlined ${styles['dashboard__timer-icon']}`}>timer</span>
                 </div>
-              </div>
             </div>
+          </div>
+
+            <button 
+              onClick={handleFinishSession}
+              disabled={isFinishing}
+              className={styles['dashboard__finish-btn']}
+            >
+              {isFinishing ? (
+                <span>กำลังบันทึก...</span>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined">stop_circle</span>
+                  <span>บันทึกและจบการวิ่ง</span>
+                </>
+              )}
+            </button>
           </section>
         ) : (
           <section className={`${styles['dashboard__empty-state']} glass-card`}>
@@ -330,6 +390,36 @@ const Dashboard = () => {
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* NFC Simulator panel - only shown in development or if a wristband is bound */}
+        {wristband && (
+          <section className={styles['dashboard__simulator-section']}>
+            <div className={`${styles['dashboard__simulator-card']} glass-card`}>
+              <div className={styles['dashboard__simulator-header']}>
+                <span className="material-symbols-outlined text-orange-500">developer_board</span>
+                <span className={styles['dashboard__simulator-title']}>NFC SIMULATOR (DEV MODE)</span>
+              </div>
+              <p className={styles['dashboard__simulator-desc']}>
+                จำลองการแตะสายรัด UID: <strong>{wristband.uid}</strong> ที่จุดเช็คพอยต์
+              </p>
+              <button 
+                onClick={handleSimulateScan}
+                disabled={isSimulating}
+                className={styles['dashboard__simulator-btn']}
+              >
+                {isSimulating ? (
+                  <span>กำลังส่งข้อมูล...</span>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">sensors</span>
+                    <span>จำลองการแตะการ์ด (Simulate Tap)</span>
+                  </>
+                )}
+              </button>
+              {simError && <p className={styles['dashboard__simulator-error']}>{simError}</p>}
             </div>
           </section>
         )}

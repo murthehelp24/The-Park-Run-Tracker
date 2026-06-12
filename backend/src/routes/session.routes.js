@@ -10,4 +10,7 @@ router.get('/:userId', authenticate, sessionController.getSessionsByUser);
 // GET /api/sessions/:sessionId/laps — ดูเวลาแต่ละรอบของ Session
 router.get('/:sessionId/laps', authenticate, sessionController.getLapsBySession);
 
+// POST /api/sessions/active/finish — จบบันทึกการวิ่งที่รันอยู่
+router.post('/active/finish', authenticate, sessionController.finishActiveSession);
+
 export default router;

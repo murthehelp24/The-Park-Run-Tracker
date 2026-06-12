@@ -1,46 +1,116 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
-import { assignWristbandAPI } from '../services/api';
+import { assignWristbandAPI, deleteWristbandAPI } from '../services/api';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
 import styles from './Profile.module.css';
+
+const ThemeSwal = Swal.mixin({
+  background: '#1e293b', // var(--color-surface)
+  color: '#e2e8f0', // var(--color-text)
+  confirmButtonColor: '#f97316', // var(--color-primary)
+  cancelButtonColor: '#475569', // var(--color-text-muted)
+  customClass: {
+    popup: 'glass-card',
+  }
+});
 
 const Profile = () => {
   const { user, wristband, logout, updateWristbandState } = useAuth();
   const [nfcUid, setNfcUid] = useState('');
   const [isBinding, setIsBinding] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleBindWristband = async (e) => {
     e.preventDefault();
     if (!nfcUid.trim()) {
-      setErrorMsg('กรุณากรอกรหัส NFC UID ของสายรัดข้อมือ');
+      ThemeSwal.fire({
+        icon: 'warning',
+        title: 'กรุณากรอกข้อมูล',
+        text: 'กรุณากรอกรหัส NFC UID ของสายรัดข้อมือ',
+      });
       return;
     }
 
     setIsBinding(true);
-    setErrorMsg('');
-    setSuccessMsg('');
 
     try {
       const response = await assignWristbandAPI(nfcUid.trim());
       if (response.success && response.data) {
-        setSuccessMsg('ผูกสายรัดข้อมือ NFC สำเร็จเรียบร้อยแล้ว!');
         updateWristbandState(response.data);
+        ThemeSwal.fire({
+          icon: 'success',
+          title: 'ผูกอุปกรณ์สำเร็จ',
+          text: 'ผูกสายรัดข้อมือ NFC สำเร็จเรียบร้อยแล้ว!',
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
-        setErrorMsg(response.message || 'การผูกสายรัดข้อมือล้มเหลว');
+        ThemeSwal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: response.message || 'การผูกสายรัดข้อมือล้มเหลว',
+        });
       }
     } catch (error) {
       const msg = error.response?.data?.message || 'ไม่พบอุปกรณ์นี้ หรือเกิดข้อผิดพลาดในการผูกอุปกรณ์';
-      setErrorMsg(msg);
+      ThemeSwal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: msg,
+      });
     } finally {
       setIsBinding(false);
     }
   };
 
-  const handleUnbind = () => {
-    setErrorMsg('กรุณาติดต่อเจ้าหน้าที่ดูแลระบบเพื่อยกเลิกการผูกสายรัดข้อมือ');
+  const handleUnbind = async () => {
+    if (!wristband) return;
+
+    const result = await ThemeSwal.fire({
+      title: 'ยืนยันการยกเลิกผูก?',
+      html: `คุณต้องการยกเลิกการผูกสายรัดข้อมือ NFC <br/><strong>(UID: ${wristband.uid})</strong> ใช่หรือไม่?<br/><br/><span style="color: var(--color-error); font-size: 13px;">*คำเตือน: ข้อมูลรอบการวิ่งของสายรัดนี้จะถูกลบไปด้วย*</span>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await deleteWristbandAPI(wristband.uid);
+      if (response.success) {
+        updateWristbandState(null);
+        setNfcUid('');
+        ThemeSwal.fire({
+          icon: 'success',
+          title: 'ยกเลิกการผูกสำเร็จ',
+          text: 'ยกเลิกการผูกสายรัดข้อมือเรียบร้อยแล้ว!',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        ThemeSwal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: response.message || 'เกิดข้อผิดพลาดในการยกเลิกการผูกสายรัดข้อมือ',
+        });
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || 'เกิดข้อผิดพลาดในการยกเลิกการผูกสายรัดข้อมือ';
+      ThemeSwal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: msg,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const achievements = [
@@ -83,6 +153,7 @@ const Profile = () => {
             การจัดการสายรัดข้อมือ NFC
           </h3>
           <div className={`${styles['profile__card']} glass-card`}>
+
             {wristband ? (
               <div>
                 <div className={styles['profile__info-row']}>
@@ -97,9 +168,10 @@ const Profile = () => {
                 </div>
                 <button 
                   onClick={handleUnbind}
+                  disabled={isDeleting}
                   className={`${styles['profile__action-btn']} ${styles['profile__action-btn--unbind']}`}
                 >
-                  เปลี่ยนสายรัดข้อมือ
+                  {isDeleting ? 'กำลังยกเลิกการผูก...' : 'เปลี่ยนสายรัดข้อมือ'}
                 </button>
               </div>
             ) : (
@@ -107,20 +179,6 @@ const Profile = () => {
                 <div className={styles['profile__form-hint']}>
                   <p>ยังไม่ได้ผูกสายรัดข้อมือ NFC สำหรับระบุตัวตนเวลาวิ่ง</p>
                 </div>
-                
-                {errorMsg && (
-                  <div className={styles['profile__error-banner']}>
-                    <span className="material-symbols-outlined text-sm">error</span>
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
-                
-                {successMsg && (
-                  <div className={styles['profile__success-banner']}>
-                    <span className="material-symbols-outlined text-sm">check_circle</span>
-                    <span>{successMsg}</span>
-                  </div>
-                )}
 
                 <div className={styles['profile__bind-group']}>
                   <input 

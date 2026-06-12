@@ -383,3 +383,112 @@
     opacity: 0;
   }
 }
+
+.dashboard__simulator-section {
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.dashboard__simulator-card {
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px dashed rgba(249, 115, 22, 0.4);
+  background: rgba(249, 115, 22, 0.03);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard__simulator-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard__simulator-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-primary);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.dashboard__simulator-desc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.dashboard__simulator-btn {
+  background: linear-gradient(135deg, var(--color-primary), #ea580c);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+
+.dashboard__simulator-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.3);
+}
+
+.dashboard__simulator-btn:active {
+  transform: translateY(1px);
+}
+
+.dashboard__simulator-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.dashboard__simulator-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+.dashboard__finish-btn {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 8px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  z-index: 10;
+}
+
+.dashboard__finish-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+}
+
+.dashboard__finish-btn:active {
+  transform: translateY(1px);
+}
+
+.dashboard__finish-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+

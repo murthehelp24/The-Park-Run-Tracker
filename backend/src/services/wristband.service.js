@@ -53,3 +53,37 @@ export const getByUser = async (userId) => {
 
   return wristbands;
 };
+
+/**
+ * ลบสายรัดข้อมือ NFC ของ User
+ */
+export const deleteWristband = async (uid, userId) => {
+  // ตรวจสอบว่าสายรัดมีอยู่จริงและเป็นของ User คนนี้
+  const wristband = await prisma.wristband.findUnique({
+    where: { uid },
+  });
+
+  if (!wristband) {
+    const err = new Error('ไม่พบสายรัดข้อมือนี้');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (wristband.userId !== userId) {
+    const err = new Error('ไม่มีสิทธิ์ลบสายรัดข้อมือนี้');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  // ลบข้อมูล lap logs ที่อ้างอิงสายรัดนี้ก่อน ป้องกันปัญหา Foreign Key error
+  await prisma.lapLog.deleteMany({
+    where: { wristbandUid: uid },
+  });
+
+  // ลบสายรัดข้อมือ
+  await prisma.wristband.delete({
+    where: { uid },
+  });
+
+  return { uid };
+};

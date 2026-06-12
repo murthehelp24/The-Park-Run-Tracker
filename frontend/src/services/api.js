@@ -41,8 +41,18 @@ export const assignWristbandAPI = async (uid) => {
   return response.data;
 };
 
+export const simulateScanAPI = async (uid) => {
+  const response = await api.post('/scan', { uid });
+  return response.data;
+};
+
 export const getWristbandAPI = async (userId) => {
   const response = await api.get(`/wristband/${userId}`);
+  return response.data;
+};
+
+export const deleteWristbandAPI = async (uid) => {
+  const response = await api.delete(`/wristband/${uid}`);
   return response.data;
 };
 
@@ -54,6 +64,11 @@ export const getSessionsAPI = async (userId) => {
 
 export const getSessionLapsAPI = async (sessionId) => {
   const response = await api.get(`/sessions/${sessionId}/laps`);
+  return response.data;
+};
+
+export const finishSessionAPI = async () => {
+  const response = await api.post('/sessions/active/finish');
   return response.data;
 };
 

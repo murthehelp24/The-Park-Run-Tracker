@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect } from 'react';
 import { loginAPI, registerAPI, getWristbandAPI } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -31,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const fetchWristband = async (userId) => {
+  async function fetchWristband(userId) {
     try {
       const response = await getWristbandAPI(userId);
       if (response.success && response.data) {
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Failed to fetch wristband info:", error);
     }
-  };
+  }
 
   const login = async (email, password) => {
     setLoading(true);
@@ -82,12 +83,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setWristband(null);
-  };
+  }
 
   const updateWristbandState = (newWristband) => {
     setWristband(newWristband);

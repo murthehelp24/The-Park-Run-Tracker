@@ -1,10 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getSessionsAPI, getSessionLapsAPI, simulateScanAPI, finishSessionAPI } from '../services/api';
 import { initiateSocketConnection, disconnectSocket } from '../services/socket';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
 import styles from './Dashboard.module.css';
+
+const formatTime = (totalSeconds) => {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
 
 const Dashboard = () => {
   const { user, wristband } = useAuth();
@@ -68,7 +74,6 @@ const Dashboard = () => {
     const socket = initiateSocketConnection();
 
     socket.connect();
-    setIsSocketConnected(socket.connected);
 
     socket.on('connect', () => {
       setIsSocketConnected(true);
@@ -136,11 +141,7 @@ const Dashboard = () => {
     return () => clearInterval(timerRef.current);
   }, [activeSession]);
 
-  const formatTime = (totalSeconds) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+
 
   const getTotalSessionDuration = () => {
     if (!activeSession) return 0;

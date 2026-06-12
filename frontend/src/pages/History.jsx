@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getSessionsAPI, getSessionLapsAPI } from '../services/api';
 import TopAppBar from '../components/TopAppBar';
@@ -15,6 +15,28 @@ const History = () => {
   const [totalSessions, setTotalSessions] = useState(0);
   const [totalLaps, setTotalLaps] = useState(0);
   const [personalBest, setPersonalBest] = useState(0);
+
+  const calculatePersonalBest = async (allSessions) => {
+    try {
+      let pbSec = Infinity;
+      const promises = allSessions.map(s => getSessionLapsAPI(s.id));
+      const results = await Promise.all(promises);
+      
+      results.forEach(res => {
+        if (res.success && res.data && res.data.laps) {
+          res.data.laps.forEach(lap => {
+            if (lap.lapDuration < pbSec) {
+              pbSec = lap.lapDuration;
+            }
+          });
+        }
+      });
+      
+      setPersonalBest(pbSec === Infinity ? 0 : pbSec);
+    } catch (e) {
+      console.error("Failed to calculate personal best lap:", e);
+    }
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -41,27 +63,7 @@ const History = () => {
     fetchHistory();
   }, [user]);
 
-  const calculatePersonalBest = async (allSessions) => {
-    try {
-      let pbSec = Infinity;
-      const promises = allSessions.map(s => getSessionLapsAPI(s.id));
-      const results = await Promise.all(promises);
-      
-      results.forEach(res => {
-        if (res.success && res.data && res.data.laps) {
-          res.data.laps.forEach(lap => {
-            if (lap.lapDuration < pbSec) {
-              pbSec = lap.lapDuration;
-            }
-          });
-        }
-      });
-      
-      setPersonalBest(pbSec === Infinity ? 0 : pbSec);
-    } catch (e) {
-      console.error("Failed to calculate personal best lap:", e);
-    }
-  };
+;
 
   const toggleSessionExpand = async (sessionId) => {
     if (expandedSession === sessionId) {

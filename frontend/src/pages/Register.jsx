@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import styles from './Register.module.css';
 
 const Register = () => {
@@ -12,7 +12,7 @@ const Register = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register } = useAuth();
+  const { register } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {

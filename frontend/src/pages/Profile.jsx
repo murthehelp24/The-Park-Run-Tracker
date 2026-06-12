@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Swal from 'sweetalert2';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import { assignWristbandAPI, deleteWristbandAPI } from '../services/api';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
@@ -17,7 +17,7 @@ const ThemeSwal = Swal.mixin({
 });
 
 const Profile = () => {
-  const { user, wristband, logout, updateWristbandState } = useAuth();
+  const { user, wristband, logout, updateWristbandState } = useAuthStore();
   const [nfcUid, setNfcUid] = useState('');
   const [isBinding, setIsBinding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

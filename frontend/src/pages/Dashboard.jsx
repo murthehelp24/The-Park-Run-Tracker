@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { getSessionsAPI, getSessionLapsAPI, simulateScanAPI, finishSessionAPI } from '../services/api';
-import { initiateSocketConnection, disconnectSocket } from '../services/socket';
+import { useEffect } from 'react';
+import { useAuthStore } from '../store/useAuthStore';
+import { useSessionStore } from '../store/useSessionStore';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
 import styles from './Dashboard.module.css';
@@ -13,135 +12,37 @@ const formatTime = (totalSeconds) => {
 };
 
 const Dashboard = () => {
-  const { user, wristband } = useAuth();
-  const [activeSession, setActiveSession] = useState(null);
-  const [laps, setLaps] = useState([]);
-  const [lapSeconds, setLapSeconds] = useState(0);
-  const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [personalBestMsg, setPersonalBestMsg] = useState('');
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [simError, setSimError] = useState('');
-  const [isFinishing, setIsFinishing] = useState(false);
+  const { user, wristband } = useAuthStore();
 
-  const timerRef = useRef(null);
+  const {
+    activeSession,
+    laps,
+    lapSeconds,
+    isSocketConnected,
+    loading,
+    personalBestMsg,
+    isSimulating,
+    simError,
+    isFinishing,
+    fetchActiveSession,
+    setupSocket,
+    handleSimulateScan,
+    handleFinishSession,
+    setPersonalBestMsg,
+  } = useSessionStore();
 
-  // 1. Load active session on mount
+  // 1. Fetch active session on mount
   useEffect(() => {
-    const fetchActiveSession = async () => {
-      if (!user) return;
-      try {
-        const res = await getSessionsAPI(user.id);
-        if (res.success && res.data && res.data.length > 0) {
-          // Check if latest session is active (endTime is null)
-          const latest = res.data[0];
-          if (latest.endTime === null) {
-            setActiveSession(latest);
-            // Fetch its laps
-            const lapsRes = await getSessionLapsAPI(latest.id);
-            if (lapsRes.success && lapsRes.data) {
-              setLaps(lapsRes.data.laps || []);
-              
-              // Calculate elapsed seconds for the current lap
-              const startTime = new Date(latest.startTime).getTime();
-              const now = new Date().getTime();
-              const totalElapsedSec = Math.floor((now - startTime) / 1000);
-              
-              if (lapsRes.data.laps.length > 0) {
-                // Find elapsed time since the last lap scanned
-                const lastLapTime = new Date(lapsRes.data.laps[lapsRes.data.laps.length - 1].scannedAt).getTime();
-                const lapElapsed = Math.floor((now - lastLapTime) / 1000);
-                setLapSeconds(lapElapsed >= 0 ? lapElapsed : 0);
-              } else {
-                setLapSeconds(totalElapsedSec >= 0 ? totalElapsedSec : 0);
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load active session:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchActiveSession();
-  }, [user]);
+    if (user) {
+      fetchActiveSession(user.id);
+    }
+  }, [user, fetchActiveSession]);
 
   // 2. Setup Socket.io listeners
   useEffect(() => {
-    if (!user) return;
-    const socket = initiateSocketConnection();
-
-    socket.connect();
-
-    socket.on('connect', () => {
-      setIsSocketConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      setIsSocketConnected(false);
-    });
-
-    socket.on('session-started', (data) => {
-      if (data.user?.id === user.id) {
-        setActiveSession(data.session);
-        setLaps([]);
-        setLapSeconds(0);
-        setPersonalBestMsg('');
-      }
-    });
-
-    socket.on('new-lap', (data) => {
-      if (data.user?.id === user.id) {
-        setActiveSession(data.session);
-        setLaps((prevLaps) => {
-          const updated = [...prevLaps, data.lap];
-          if (updated.length > 1) {
-            const fastestSoFar = Math.min(...updated.slice(0, -1).map(l => l.lapDuration));
-            if (data.lap.lapDuration < fastestSoFar) {
-              setPersonalBestMsg(`ทำเวลาได้ดีที่สุด! รอบที่ ${data.lap.lapNumber}: ${formatTime(data.lap.lapDuration)}`);
-            }
-          }
-          return updated;
-        });
-        setLapSeconds(0);
-      }
-    });
-
-    socket.on('session-finished', (data) => {
-      if (data.userId === user.id) {
-        setActiveSession(null);
-        setLaps([]);
-        setLapSeconds(0);
-        setPersonalBestMsg('');
-      }
-    });
-
-    return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('session-started');
-      socket.off('new-lap');
-      socket.off('session-finished');
-      disconnectSocket();
-    };
-  }, [user]);
-
-  // 3. Stopwatch timer effect
-  useEffect(() => {
-    if (activeSession) {
-      timerRef.current = setInterval(() => {
-        setLapSeconds((prev) => prev + 1);
-      }, 1000);
-    } else {
-      clearInterval(timerRef.current);
-    }
-
-    return () => clearInterval(timerRef.current);
-  }, [activeSession]);
-
-
+    const cleanup = setupSocket(user, formatTime);
+    return cleanup;
+  }, [user, setupSocket]);
 
   const getTotalSessionDuration = () => {
     if (!activeSession) return 0;
@@ -160,35 +61,9 @@ const Dashboard = () => {
     return laps[laps.length - 1].lapDuration;
   };
 
-  const handleSimulateScan = async () => {
-    if (!wristband) return;
-    setIsSimulating(true);
-    setSimError('');
-    try {
-      await simulateScanAPI(wristband.uid);
-    } catch (err) {
-      console.error("Failed to simulate scan:", err);
-      setSimError(err.response?.data?.message || 'การจำลองสแกนล้มเหลว');
-    } finally {
-      setIsSimulating(false);
-    }
-  };
-
-  const handleFinishSession = async () => {
-    if (!activeSession) return;
-    setIsFinishing(true);
-    try {
-      const res = await finishSessionAPI();
-      if (res.success) {
-        setActiveSession(null);
-        setLaps([]);
-        setLapSeconds(0);
-        setPersonalBestMsg('');
-      }
-    } catch (err) {
-      console.error("Failed to finish session:", err);
-    } finally {
-      setIsFinishing(false);
+  const handleSimulate = () => {
+    if (wristband) {
+      handleSimulateScan(wristband.uid);
     }
   };
 
@@ -407,7 +282,7 @@ const Dashboard = () => {
                 จำลองการแตะสายรัด UID: <strong>{wristband.uid}</strong> ที่จุดเช็คพอยต์
               </p>
               <button 
-                onClick={handleSimulateScan}
+                onClick={handleSimulate}
                 disabled={isSimulating}
                 className={styles['dashboard__simulator-btn']}
               >

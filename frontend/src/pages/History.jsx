@@ -1,92 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { getSessionsAPI, getSessionLapsAPI } from '../services/api';
+import { useEffect } from 'react';
+import { useAuthStore } from '../store/useAuthStore';
+import { useHistoryStore } from '../store/useHistoryStore';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
 import styles from './History.module.css';
 
 const History = () => {
-  const { user } = useAuth();
-  const [sessions, setSessions] = useState([]);
-  const [sessionLaps, setSessionLaps] = useState({});
-  const [expandedSession, setExpandedSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
 
-  const [totalSessions, setTotalSessions] = useState(0);
-  const [totalLaps, setTotalLaps] = useState(0);
-  const [personalBest, setPersonalBest] = useState(0);
-
-  const calculatePersonalBest = async (allSessions) => {
-    try {
-      let pbSec = Infinity;
-      const promises = allSessions.map(s => getSessionLapsAPI(s.id));
-      const results = await Promise.all(promises);
-      
-      results.forEach(res => {
-        if (res.success && res.data && res.data.laps) {
-          res.data.laps.forEach(lap => {
-            if (lap.lapDuration < pbSec) {
-              pbSec = lap.lapDuration;
-            }
-          });
-        }
-      });
-      
-      setPersonalBest(pbSec === Infinity ? 0 : pbSec);
-    } catch (e) {
-      console.error("Failed to calculate personal best lap:", e);
-    }
-  };
+  const {
+    sessions,
+    sessionLaps,
+    expandedSession,
+    loading,
+    totalSessions,
+    totalLaps,
+    personalBest,
+    fetchHistory,
+    toggleSessionExpand,
+  } = useHistoryStore();
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      if (!user) return;
-      try {
-        const res = await getSessionsAPI(user.id);
-        if (res.success && res.data) {
-          const allSessions = res.data;
-          setSessions(allSessions);
-          setTotalSessions(allSessions.length);
-          
-          const lapsCount = allSessions.reduce((acc, s) => acc + s.totalLaps, 0);
-          setTotalLaps(lapsCount);
-
-          calculatePersonalBest(allSessions);
-        }
-      } catch (err) {
-        console.error("Failed to load history:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHistory();
-  }, [user]);
-
-;
-
-  const toggleSessionExpand = async (sessionId) => {
-    if (expandedSession === sessionId) {
-      setExpandedSession(null);
-      return;
+    if (user) {
+      fetchHistory(user.id);
     }
-
-    setExpandedSession(sessionId);
-
-    if (!sessionLaps[sessionId]) {
-      try {
-        const res = await getSessionLapsAPI(sessionId);
-        if (res.success && res.data) {
-          setSessionLaps(prev => ({
-            ...prev,
-            [sessionId]: res.data.laps || []
-          }));
-        }
-      } catch (error) {
-        console.error("Failed to load session laps:", error);
-      }
-    }
-  };
+  }, [user, fetchHistory]);
 
   const formatTime = (totalSeconds) => {
     if (!totalSeconds) return '--:--';

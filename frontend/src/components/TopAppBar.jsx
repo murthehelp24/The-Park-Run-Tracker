@@ -1,8 +1,8 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import styles from './TopAppBar.module.css';
 
 const TopAppBar = ({ isSocketConnected = false }) => {
-  const { user, wristband } = useAuth();
+  const { user, wristband } = useAuthStore();
 
   return (
     <header className={styles['top-bar']}>

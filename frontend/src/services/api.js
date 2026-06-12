@@ -35,6 +35,11 @@ export const registerAPI = async (firstName, lastName, email, password) => {
   return response.data;
 };
 
+export const googleLoginAPI = async (email, firstName, lastName) => {
+  const response = await api.post('/auth/google', { email, firstName, lastName });
+  return response.data;
+};
+
 // Wristband endpoints
 export const assignWristbandAPI = async (uid) => {
   const response = await api.post('/wristband/assign', { uid });

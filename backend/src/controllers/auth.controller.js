@@ -41,3 +41,22 @@ export const login = async (req, res, next) => {
     next(err);
   }
 };
+
+/**
+ * POST /api/auth/google
+ * เข้าสู่ระบบผ่าน Google (จำลอง/ซิงก์)
+ */
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { email, firstName, lastName } = req.body;
+
+    if (!email || !firstName || !lastName) {
+      return error(res, ERROR_MSG.MISSING_FIELDS, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const result = await authService.googleLogin({ email, firstName, lastName });
+    return success(res, result, SUCCESS_MSG.LOGIN_SUCCESS);
+  } catch (err) {
+    next(err);
+  }
+};

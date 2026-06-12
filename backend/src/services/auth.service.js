@@ -88,3 +88,44 @@ export const login = async ({ email, password }) => {
     },
   };
 };
+
+/**
+ * เข้าสู่ระบบผ่าน Google (ใช้กับ Supabase Auth)
+ * - ค้นหา User จาก email หรือสร้างใหม่ถ้ายังไม่มี
+ * - สร้าง JWT Token ส่งกลับให้ Frontend
+ */
+export const googleLogin = async ({ email, firstName, lastName }) => {
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    // สร้าง User ใหม่พร้อม dummy password
+    const dummyPassword = await bcrypt.hash(`google-oauth-dummy-${Math.random()}`, SALT_ROUNDS);
+    user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password: dummyPassword,
+      },
+    });
+  }
+
+  // สร้าง JWT Token สำหรับเซสชันของเราเอง
+  const token = jwt.sign(
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: TOKEN_EXPIRY }
+  );
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+    },
+  };
+};

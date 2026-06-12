@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { loginAPI, registerAPI, getWristbandAPI } from '../services/api';
+import { loginAPI, registerAPI, getWristbandAPI, googleLoginAPI } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 
 export const useAuthStore = create((set, get) => ({
   // --- States ---
@@ -10,6 +11,34 @@ export const useAuthStore = create((set, get) => ({
 
   // --- Actions ---
   initializeAuth: async () => {
+    // 1. Listen for Supabase auth state change (Google OAuth callback redirect)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const email = session.user.email;
+        const fullName = session.user.user_metadata?.full_name || '';
+        const firstName = fullName.split(' ')[0] || session.user.user_metadata?.given_name || 'Google';
+        const lastName = fullName.split(' ').slice(1).join(' ') || session.user.user_metadata?.family_name || 'User';
+        
+        try {
+          // Sync authenticated Google user with our Express backend
+          const res = await googleLoginAPI(email, firstName, lastName);
+          if (res.success && res.data) {
+            const { token, user: userData } = res.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userData));
+            set({ user: userData, isAuthenticated: true });
+            await get().fetchWristband(userData.id);
+            
+            // Clean up Supabase local session to prevent duplicate runs
+            await supabase.auth.signOut();
+          }
+        } catch (err) {
+          console.error("Failed to sync Google user with backend:", err);
+        }
+      }
+    });
+
+    // 2. Load existing session from local storage
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     
@@ -54,6 +83,25 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Login failed. Please check your credentials.';
       return { success: false, message: errorMsg };
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  loginWithGoogle: async () => {
+    set({ loading: true });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard',
+        }
+      });
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error("Google sign in failed:", error);
+      return { success: false, message: error.message || 'Google sign in failed.' };
     } finally {
       set({ loading: false });
     }

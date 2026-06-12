@@ -1,0 +1,79 @@
+// กำหนดตัวเชื่อมต่อฐานข้อมูล PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. ตารางเก็บข้อมูลผู้ใช้งาน (สมัครสมาชิก / ล็อกอิน)
+model User {
+  id        Int      @id @default(autoincrement()) @map("id")
+  firstName String   @map("first_name") @db.VarChar(50)
+  lastName  String   @map("last_name") @db.VarChar(50)
+  email     String   @unique @db.VarChar(100)
+  password  String   @db.VarChar(255) // เก็บเอาไว้ตรวจสอบตอนล็อกอิน
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ความเชื่อมโยงไปยังตารางอื่น
+  wristbands  Wristband[]
+  runSessions RunSession[]
+
+  @@map("users")
+}
+
+// 2. ตารางเก็บข้อมูลสายรัดข้อมือ NFC ที่แจกให้นักวิ่ง
+model Wristband {
+  uid        String          @id @map("uid") @db.VarChar(50) // รหัสบนชิปสายรัด
+  userId     Int             @map("user_id") // เป็นของนักวิ่งคนไหน
+  status     WristbandStatus @default(ACTIVE) // ใช้งานอยู่ หรือ เลิกใช้งานแล้ว
+  assignedAt DateTime        @default(now()) @map("assigned_at")
+
+  // ความเชื่อมโยงไปยังตารางอื่น
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lapLogs LapLog[]
+
+  @@map("wristbands")
+}
+
+enum WristbandStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// 3. ตารางเก็บรอบการวิ่ง (แต่ละวัน/แต่ละครั้ง ที่นักวิ่งมาวิ่ง)
+model RunSession {
+  id        Int       @id @default(autoincrement()) @map("id")
+  userId    Int       @map("user_id") // ใครเป็นคนมาวิ่งครั้งนี้
+  startTime DateTime  @map("start_time") // แตะครั้งแรก = เริ่มวิ่ง
+  endTime   DateTime? @map("end_time") // เวลาที่วิ่งเสร็จสิ้น
+  totalLaps Int       @default(0) @map("total_laps") // จำนวนรอบรวมที่วิ่งได้
+
+  // ความเชื่อมโยงไปยังตารางอื่น
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lapLogs LapLog[]
+
+  // ทำ Index เพื่อให้ค้นหาประวัติการวิ่งของ User คนนี้ได้ไวๆ
+  @@index([userId])
+  @@map("run_sessions")
+}
+
+// 4. ตารางบันทึกการแตะการ์ดแต่ละรอบ (ที่ส่งมาจากเครื่องอ่าน NFC)
+model LapLog {
+  id           BigInt   @id @default(autoincrement()) @map("id")
+  sessionId    Int      @map("session_id") // อยู่ในการวิ่งครั้งไหน
+  wristbandUid String   @map("wristband_uid") @db.VarChar(50) // สายรัดเส้นไหนที่แตะ
+  lapNumber    Int      @map("lap_number") // รอบที่เท่าไหร่ (รอบที่ 1, 2, 3...)
+  scannedAt    DateTime @map("scanned_at") // แตะตอนเวลาเท่าไหร่
+  lapDuration  Int      @map("lap_duration") // รอบนี้ใช้เวลาวิ่งไปกี่วินาที
+
+  // ความเชื่อมโยงไปยังตารางอื่น
+  runSession RunSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  wristband  Wristband  @relation(fields: [wristbandUid], references: [uid])
+
+  // ทำ Index เพื่อให้ดึงข้อมูลเวลาแต่ละรอบมาโชว์ที่หน้าจอได้ทันทีแบบไม่หน่วง
+  @@index([sessionId])
+  @@map("lap_logs")
+}

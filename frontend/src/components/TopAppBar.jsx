@@ -1,33 +1,34 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import styles from './TopAppBar.module.css';
 
 const TopAppBar = ({ isSocketConnected = false }) => {
   const { user, wristband } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-orange-500" style={{ fontVariationSettings: "'FILL' 1" }}>
+    <header className={styles['top-bar']}>
+      <div className={styles['top-bar__logo-wrapper']}>
+        <span className={`material-symbols-outlined ${styles['top-bar__logo-icon']}`} style={{ fontVariationSettings: "'FILL' 1" }}>
           bolt
         </span>
-        <span className="font-label-caps text-sm tracking-widest text-orange-500 font-bold uppercase">
+        <span className={styles['top-bar__logo-text']}>
           PARK RUN
         </span>
       </div>
       
       {user && (
-        <div className="flex items-center gap-3">
+        <div className={styles['top-bar__badge-wrapper']}>
           {wristband ? (
-            <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1 rounded-full border border-orange-500/20">
-              <span className={`w-2.5 h-2.5 rounded-full ${isSocketConnected ? 'bg-orange-500 animate-pulse' : 'bg-slate-500'}`}></span>
-              <span className="text-[10px] font-label-caps text-slate-300 font-semibold uppercase">
+            <div className={styles['top-bar__status-badge']}>
+              <span className={`${styles['top-bar__status-indicator']} ${isSocketConnected ? styles['top-bar__status-indicator--active'] : styles['top-bar__status-indicator--inactive']}`}></span>
+              <span className={styles['top-bar__status-text']}>
                 {isSocketConnected ? 'NFC ACTIVE' : 'NFC READY'}
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-              <span className="text-[10px] font-label-caps text-slate-400 font-semibold uppercase">
+            <div className={`${styles['top-bar__status-badge']} ${styles['top-bar__status-badge--noband']}`}>
+              <span className={`${styles['top-bar__status-indicator']} ${styles['top-bar__status-indicator--noband']}`}></span>
+              <span className={styles['top-bar__status-text']}>
                 NO BAND
               </span>
             </div>

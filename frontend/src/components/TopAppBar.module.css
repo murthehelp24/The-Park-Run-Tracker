@@ -1,0 +1,81 @@
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--margin-mobile);
+  height: 64px;
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.top-bar__logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-bar__logo-icon {
+  color: var(--color-primary);
+}
+
+.top-bar__logo-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.top-bar__badge-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-bar__status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-surface-container);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.top-bar__status-badge--noband {
+  border-color: var(--color-border);
+}
+
+.top-bar__status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+}
+
+.top-bar__status-indicator--active {
+  background-color: var(--color-primary);
+  animation: pulse-brand 2s infinite ease-in-out;
+}
+
+.top-bar__status-indicator--inactive {
+  background-color: #64748b;
+}
+
+.top-bar__status-indicator--noband {
+  background-color: #f87171;
+}
+
+.top-bar__status-text {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}

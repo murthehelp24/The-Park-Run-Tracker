@@ -8,10 +8,11 @@ const Register = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { register } = useAuthStore();
   const navigate = useNavigate();
 
@@ -44,8 +45,8 @@ const Register = () => {
         {/* Branding header */}
         <div className={styles['register__header']}>
           <div className={styles['register__logo-box']}>
-            <span 
-              className={`material-symbols-outlined ${styles['register__logo-icon']}`} 
+            <span
+              className={`material-symbols-outlined ${styles['register__logo-icon']}`}
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
               bolt
@@ -67,7 +68,7 @@ const Register = () => {
               <span>{errorMsg}</span>
             </div>
           )}
-          
+
           {successMsg && (
             <div className={styles['register__success-banner']}>
               <span className="material-symbols-outlined">check_circle</span>
@@ -82,11 +83,11 @@ const Register = () => {
                   ชื่อ (First Name)
                 </label>
                 <div className={styles['register__input-wrapper']}>
-                  <input 
+                  <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="สมชาย"
+                    placeholder="กรอกชื่อจริงของคุณ"
                     className={styles['register__input-field']}
                     disabled={isSubmitting}
                   />
@@ -98,11 +99,11 @@ const Register = () => {
                   นามสกุล (Last Name)
                 </label>
                 <div className={styles['register__input-wrapper']}>
-                  <input 
+                  <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="รักวิ่ง"
+                    placeholder="กรอกนามสกุลของคุณ"
                     className={styles['register__input-field']}
                     disabled={isSubmitting}
                   />
@@ -116,11 +117,11 @@ const Register = () => {
               </label>
               <div className={styles['register__input-wrapper']}>
                 <span className={`material-symbols-outlined ${styles['register__input-icon']}`}>mail</span>
-                <input 
+                <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="somchai@example.com"
+                  placeholder="กรอกที่อยู่อีเมลของคุณ"
                   className={styles['register__input-field']}
                   disabled={isSubmitting}
                 />
@@ -133,14 +134,24 @@ const Register = () => {
               </label>
               <div className={styles['register__input-wrapper']}>
                 <span className={`material-symbols-outlined ${styles['register__input-icon']}`}>lock</span>
-                <input 
-                  type="password"
+                <input
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="กรอกรหัสผ่านของคุณ"
                   className={styles['register__input-field']}
                   disabled={isSubmitting}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={styles['register__visibility-btn']}
+                  aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                >
+                  <span className="material-symbols-outlined">
+                    {showPassword ? 'visibility' : 'visibility_off'}
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -150,7 +161,7 @@ const Register = () => {
               </label>
               <div className={styles['register__input-wrapper']}>
                 <span className={`material-symbols-outlined ${styles['register__input-icon']}`}>contactless</span>
-                <input 
+                <input
                   type="text"
                   placeholder="ผูกข้อมูลทีหลังได้ในหน้า Profile"
                   className={styles['register__input-field']}
@@ -159,7 +170,7 @@ const Register = () => {
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={isSubmitting}
               className={styles['register__submit-btn']}
@@ -172,8 +183,8 @@ const Register = () => {
         {/* Back to Login Footer */}
         <div className={styles['register__footer']}>
           <p className={styles['register__subtitle']}>
-            มีบัญชีสมาชิกอยู่แล้ว? 
-            <button 
+            มีบัญชีสมาชิกอยู่แล้ว?
+            <button
               onClick={() => navigate('/login')}
               className={styles['register__login-link']}
             >

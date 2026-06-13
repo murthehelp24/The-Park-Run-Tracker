@@ -248,3 +248,20 @@
 .login__google-icon-svg {
   flex-shrink: 0;
 }
+
+.login__visibility-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s ease;
+  margin-left: 8px;
+}
+
+.login__visibility-btn:hover {
+  color: var(--color-text);
+}

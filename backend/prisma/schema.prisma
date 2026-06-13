@@ -72,7 +72,7 @@ model LapLog {
 
   // ความเชื่อมโยงไปยังตารางอื่น
   runSession RunSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  wristband  Wristband  @relation(fields: [wristbandUid], references: [uid])
+  wristband  Wristband  @relation(fields: [wristbandUid], references: [uid], onDelete: Cascade)
 
   // ทำ Index เพื่อให้ดึงข้อมูลเวลาแต่ละรอบมาโชว์ที่หน้าจอได้ทันทีแบบไม่หน่วง
   @@index([sessionId])

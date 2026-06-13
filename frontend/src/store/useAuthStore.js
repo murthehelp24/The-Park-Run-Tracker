@@ -30,7 +30,7 @@ export const useAuthStore = create((set, get) => ({
             await get().fetchWristband(userData.id);
             
             // Clean up Supabase local session to prevent duplicate runs
-            await supabase.auth.signOut();
+            try { await supabase.auth.signOut(); } catch (_) { /* non-critical */ }
           }
         } catch (err) {
           console.error("Failed to sync Google user with backend:", err);

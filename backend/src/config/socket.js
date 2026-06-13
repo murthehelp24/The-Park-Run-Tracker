@@ -7,9 +7,10 @@ let io;
  * เรียกใช้ครั้งเดียวตอน server เริ่มทำงาน
  */
 export const initSocket = (httpServer) => {
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
   io = new Server(httpServer, {
     cors: {
-      origin: '*',
+      origin: FRONTEND_URL,
       methods: ['GET', 'POST'],
     },
   });

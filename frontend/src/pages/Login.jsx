@@ -6,6 +6,7 @@ import styles from './Login.module.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, loginWithGoogle } = useAuthStore();
@@ -79,7 +80,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex@example.com"
+                  placeholder="กรอกที่อยู่อีเมลของคุณ"
                   className={styles['login__input-field']}
                   disabled={isSubmitting}
                 />
@@ -93,13 +94,23 @@ const Login = () => {
               <div className={styles['login__input-wrapper']}>
                 <span className={`material-symbols-outlined ${styles['login__input-icon']}`}>lock</span>
                 <input 
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="กรอกรหัสผ่านของคุณ"
                   className={styles['login__input-field']}
                   disabled={isSubmitting}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={styles['login__visibility-btn']}
+                  aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                >
+                  <span className="material-symbols-outlined">
+                    {showPassword ? 'visibility' : 'visibility_off'}
+                  </span>
+                </button>
               </div>
             </div>
 

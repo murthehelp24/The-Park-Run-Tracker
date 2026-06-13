@@ -2,6 +2,8 @@
 
 > เอกสารอธิบายลำดับขั้นตอน (Phases) ในการพัฒนาระบบ The Park Run Tracker ทั้งหมด
 > แบ่งเป็น **6 เฟสหลัก** เรียงตามลำดับก่อน-หลัง พร้อมอธิบายรายละเอียดแต่ละขั้นตอน
+>
+> ⚡ **อัปเดตล่าสุด**: เพิ่มระบบ Login ด้วย Google (Supabase Auth + OAuth 2.0)
 
 ---
 
@@ -20,7 +22,7 @@ Phase 1        Phase 2        Phase 3        Phase 4        Phase 5        Phase
 | 3 | พัฒนา Backend API | ✅ เสร็จแล้ว | สร้าง Express Server, เขียน API ทั้งหมด, ระบบ Auth |
 | 4 | พัฒนา Frontend (React) | ✅ เสร็จแล้ว | สร้างหน้าจอทั้งหมด, ระบบ Routing, เรียก API |
 | 5 | เชื่อมต่อ Real-time (Socket.io) | ✅ เสร็จแล้ว | เชื่อม Frontend-Backend แบบ Real-time |
-| 6 | ทดสอบ, แก้บัก และ Deploy | ⏳ กำลังดำเนินการ | ทดสอบทุกฟีเจอร์, แก้บัก, เตรียม Deploy |
+| 6 | ทดสอบ, แก้บัก และ Deploy | ✅ เสร็จแล้ว | ทดสอบทุกฟีเจอร์, แก้บัก, เตรียม Deploy |
 
 ---
 
@@ -51,11 +53,12 @@ Phase 1        Phase 2        Phase 3        Phase 4        Phase 5        Phase
 
 #### 1.3 เลือก Tech Stack
 - ตัดสินใจเลือกเทคโนโลยีตามหลัก **Basic & Clean Code**:
-  - Frontend: React (Vite) + React Router Dom + Socket.io-client + Tailwind CSS
-  - Backend: Express.js + Socket.io + JWT + bcrypt + Day.js + dotenv
-  - Database: PostgreSQL + Prisma ORM
-  - Package Manager: pnpm
-  - Module System: ES Modules (`"type": "module"`)
+   - Frontend: React (Vite) + React Router Dom + Socket.io-client + CSS Modules + Zustand + Supabase Auth 🆕
+   - Backend: Express.js + Socket.io + JWT + bcrypt + Day.js + dotenv
+   - Database: PostgreSQL + Prisma ORM (hosted บน Supabase)
+   - Authentication: JWT (Email/Password) + **Google OAuth via Supabase Auth** 🆕
+   - Package Manager: pnpm
+   - Module System: ES Modules (`"type": "module"`)
 
 #### 1.4 วางโครงสร้างโปรเจค
 - สร้างโฟลเดอร์ `backend/` และ `frontend/`
@@ -267,6 +270,42 @@ app.use(errorHandler);
    - สร้าง JWT Token ด้วย `jwt.sign({ userId: user.id }, JWT_SECRET)`
    - Return Token กลับไป Controller
 
+**`POST /api/auth/google`** — เข้าสู่ระบบผ่าน Google (Supabase OAuth): 🆕
+> ⚡ ฟีเจอร์เพิ่มเติม — รองรับการล็อกอินด้วยบัญชี Google ผ่าน Supabase Auth
+
+1. **Route** (`auth.routes.js`): กำหนดเส้นทาง `router.post('/google', authController.googleLogin)`
+2. **Controller** (`auth.controller.js`): รับ `req.body` → เรียก `authService.googleLogin(data)` → ส่ง Token
+3. **Service** (`auth.service.js`):
+   - รับ `email`, `firstName`, `lastName` ที่ได้จาก Supabase Auth (หลัง OAuth redirect)
+   - ค้นหาผู้ใช้จาก email (`prisma.user.findUnique()`)
+   - **ถ้าไม่มี User** → สร้าง User ใหม่อัตโนมัติ พร้อม dummy password (เพราะ Google ไม่ต้องใช้ password)
+   - **ถ้ามี User อยู่แล้ว** → ใช้ข้อมูลเดิม
+   - สร้าง JWT Token ด้วย `jwt.sign({ userId: user.id }, JWT_SECRET)`
+   - Return Token + User กลับไป Controller
+
+**Flow ทั้งหมดของ Google Login:**
+```
+Frontend (Supabase SDK)        Supabase Auth           Backend (Express)
+─────────────────────         ─────────────          ──────────────────
+1. กดปุ่ม "Continue with Google"
+   │
+   ├── supabase.auth.signInWithOAuth()
+   │         │
+   │         ├── Redirect ไป Google Consent Screen
+   │         │         │
+   │         │         └── User อนุมัติ → Redirect กลับมาที่แอป
+   │         │
+   │         └── onAuthStateChange() ได้รับ session
+   │
+   ├── ดึง email, name จาก session.user
+   │
+   └── POST /api/auth/google ──────────────────────► รับ email, name
+                                                      │
+                                                      ├── findOrCreate User
+                                                      ├── สร้าง JWT Token
+                                                      └── ส่ง token + user กลับ
+```
+
 #### 3.4 สร้าง API — Wristband (ระบบสายรัดข้อมือ)
 
 **ไฟล์ที่เกี่ยวข้อง:** `wristband.routes.js` → `wristband.controller.js` → `wristband.service.js`
@@ -355,6 +394,7 @@ export const error = (res, message = 'Error', statusCode = 500) => {
 - โครงสร้างโฟลเดอร์ Backend ที่แยก Layer ชัดเจน (Routes → Controllers → Services)
 - `server.js` ที่ทำหน้าที่เป็น Entry Point เท่านั้น (ไม่มี Logic ปนอยู่)
 - ระบบ Authentication ด้วย JWT + bcrypt (แยก Service)
+- **🆕 ระบบ Google Login ผ่าน Supabase Auth** — API `POST /api/auth/google` สำหรับ sync user จาก Google OAuth
 - API สำหรับรับข้อมูล NFC scan พร้อมคำนวณเวลารอบวิ่ง (แยก Service)
 - Middleware สำหรับ Auth และ Error Handling
 - Utils สำหรับ Response format มาตรฐาน
@@ -374,16 +414,17 @@ export const error = (res, message = 'Error', statusCode = 500) => {
 cd frontend
 pnpm create vite . --template react
 pnpm install
-pnpm add react-router-dom socket.io-client axios
+pnpm add react-router-dom socket.io-client axios zustand @supabase/supabase-js
 ```
 
 #### 4.2 ตั้งค่า Routing (React Router Dom)
 ```
-/login          → หน้าล็อกอิน
+/login          → หน้าล็อกอิน (รองรับ Email + Google Login)
 /register       → หน้าสมัครสมาชิก
 /dashboard      → หน้า Dashboard (หน้าหลัก)
 /history        → หน้าประวัติการวิ่ง
 /history/:id    → หน้ารายละเอียดรอบวิ่ง
+/profile        → 🆕 หน้าโปรไฟล์ผู้ใช้ (จัดการบัญชี, สายรัดข้อมือ)
 ```
 
 #### 4.3 สร้างหน้าจอ — Login Page
@@ -391,6 +432,11 @@ pnpm add react-router-dom socket.io-client axios
 - เรียก `POST /api/auth/login`
 - เก็บ JWT Token ไว้ใน localStorage
 - ล็อกอินสำเร็จ → Redirect ไปหน้า Dashboard
+- **🆕 ปุ่ม "Continue with Google"** — เรียก Supabase OAuth เพื่อล็อกอินด้วย Google
+  - ใช้ `supabase.auth.signInWithOAuth({ provider: 'google' })`
+  - หลัง OAuth สำเร็จ → `onAuthStateChange()` จะดึงข้อมูล user
+  - เรียก `POST /api/auth/google` เพื่อ sync กับ Express backend
+  - เก็บ JWT Token → Redirect ไป Dashboard
 
 #### 4.4 สร้างหน้าจอ — Register Page
 - ฟอร์มสมัครสมาชิก: ชื่อ + นามสกุล + อีเมล + รหัสผ่าน
@@ -411,17 +457,40 @@ pnpm add react-router-dom socket.io-client axios
 - แต่ละรายการแสดง: วันที่, จำนวนรอบ, เวลารวม
 - กดเข้าไปดูรายละเอียด → แสดงเวลาแต่ละรอบ
 
-#### 4.7 ตกแต่ง UI / Styling
-- ใช้ **Tailwind CSS** หรือ CSS ปกติ
+#### 4.7 สร้างหน้าจอ — Profile Page 🆕
+> ⚡ หน้าจอเพิ่มเติมที่ไม่ได้อยู่ในแผนเดิม
+
+- แสดงข้อมูลผู้ใช้: ชื่อ, อีเมล
+- จัดการสายรัดข้อมือ: ดู/ลบ/ผูกสายรัด
+- ปุ่ม Logout
+
+#### 4.8 State Management ด้วย Zustand 🆕
+- ใช้ **Zustand** (`useAuthStore`) สำหรับจัดการ global state แทน Context API
+- จัดการ states: `user`, `wristband`, `loading`, `isAuthenticated`
+- actions: `login`, `loginWithGoogle`, `register`, `logout`, `initializeAuth`, `fetchWristband`
+- `initializeAuth()` ทำหน้าที่:
+  - ตรวจสอบ Supabase auth state change (สำหรับ Google OAuth callback)
+  - โหลด session จาก localStorage
+
+#### 4.9 Supabase Client Setup 🆕
+- สร้างไฟล์ `services/supabaseClient.js` สำหรับเชื่อมต่อ Supabase Auth
+- ใช้ environment variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+
+#### 4.10 ตกแต่ง UI / Styling
+- ใช้ **CSS Modules** (`.module.css`) สำหรับแต่ละหน้า
 - ออกแบบให้เป็น **Mobile-first** (ปรับขนาดหน้าจอให้ดูเหมือนเปิดบนมือถือ)
 - สีธีมสปอร์ต (เช่น เขียว, ส้ม, ขาว)
 - มี Loading State และ Error State สำหรับทุกหน้า
+- ใช้ **Google Material Symbols** สำหรับ Icons
 
 ### ✅ ผลลัพธ์ที่ได้
-- React App พร้อมหน้าจอ 4-5 หน้า
-- ระบบ Routing ครบถ้วน
-- เรียก API จาก Backend ได้ทุกเส้น
-- UI ที่ดูดีบนมือถือ พร้อมธีมสปอร์ต
+- React App พร้อมหน้าจอ **5 หน้า** (Login, Register, Dashboard, History, Profile)
+- ระบบ Routing ครบถ้วน (6 เส้นทาง)
+- เรียก API จาก Backend ได้ทุกเส้น รวมถึง Google Login API
+- **🆕 ระบบ Google Login** ผ่าน Supabase OAuth → sync กับ Express backend
+- **🆕 State Management** ด้วย Zustand
+- **🆕 หน้า Profile** สำหรับจัดการบัญชีและสายรัด
+- UI ที่ดูดีบนมือถือ พร้อมธีมสปอร์ต + CSS Modules
 
 ---
 
@@ -553,6 +622,8 @@ socket.on('new-lap', (lapData) => {
 | `react-router-dom` | Production | Phase 4 |
 | `socket.io-client` | Production | Phase 5 |
 | `axios` | Production | Phase 4 |
+| `zustand` | Production | Phase 4 🆕 |
+| `@supabase/supabase-js` | Production | Phase 4 🆕 |
 
 ---
 

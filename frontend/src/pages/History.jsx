@@ -54,7 +54,7 @@ const History = () => {
       <TopAppBar />
 
       <main className={styles['history__main']}>
-        <div className="flex items-center justify-between mb-4">
+        <div className={styles['history__title-wrapper']}>
           <h2 className={styles['history__title']}>
             ประวัติการวิ่ง
           </h2>
@@ -125,7 +125,7 @@ const History = () => {
                     >
                       <div className={styles['history__session-info']}>
                         <div className={styles['history__session-icon-box']}>
-                          <span className="material-symbols-outlined text-lg">directions_run</span>
+                          <span className={`material-symbols-outlined ${styles['history__session-run-icon']}`}>directions_run</span>
                         </div>
                         <div className={styles['history__session-meta']}>
                           <h4 className={styles['history__session-date']}>
@@ -145,7 +145,7 @@ const History = () => {
                     {isExpanded && (
                       <div className={styles['history__session-laps-list']}>
                         {lapsList.length === 0 ? (
-                          <div className="text-center py-2 text-xs text-slate-500">
+                          <div className={styles['history__laps-loading']}>
                             {session.totalLaps === 0 ? 'ไม่มีบันทึกรอบวิ่ง' : 'กำลังโหลดข้อมูล...'}
                           </div>
                         ) : (

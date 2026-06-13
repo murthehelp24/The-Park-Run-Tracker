@@ -237,7 +237,8 @@
 
 .dashboard__map-card {
   border-radius: var(--radius-lg);
-  height: 128px;
+  width: 100%;
+  aspect-ratio: 400 / 150;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -251,7 +252,6 @@
 .dashboard__map-svg-wrapper {
   position: absolute;
   inset: 0;
-  opacity: 0.2;
 }
 
 .dashboard__map-badge {
@@ -490,5 +490,67 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+/* ── Classes replacing Tailwind utilities ── */
+
+.dashboard__alert-trophy-icon {
+  font-size: 18px;
+}
+
+.dashboard__ring-track {
+  stroke: #1e293b;
+}
+
+.dashboard__ring-progress {
+  stroke: #f97316;
+}
+
+.dashboard__timer-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.dashboard__finish-icon {
+  font-size: 20px;
+}
+
+.dashboard__empty-sensor-icon {
+  font-size: 30px;
+}
+
+.dashboard__empty-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard__metric-icon {
+  color: var(--color-primary);
+  margin-bottom: 6px;
+  font-size: 20px;
+}
+
+.dashboard__map-section {
+  margin-top: 16px;
+}
+
+.dashboard__map-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dashboard__map-badge-icon {
+  color: var(--color-primary);
+  font-size: 14px;
+}
+
+.dashboard__simulator-icon {
+  color: var(--color-primary);
+}
+
+.dashboard__simulator-scan-icon {
+  font-size: 20px;
 }
 

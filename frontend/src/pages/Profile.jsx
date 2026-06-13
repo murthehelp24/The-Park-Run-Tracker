@@ -148,7 +148,7 @@ const Profile = () => {
         </section>
 
         {/* NFC Wristband Section */}
-        <section className="space-y-2">
+        <section className={styles['profile__section']}>
           <h3 className={styles['profile__section-title']}>
             การจัดการสายรัดข้อมือ NFC
           </h3>
@@ -203,7 +203,7 @@ const Profile = () => {
         </section>
 
         {/* Achievements Section */}
-        <section className="space-y-2">
+        <section className={styles['profile__section']}>
           <h3 className={styles['profile__section-title']}>
             ความสำเร็จของฉัน
           </h3>
@@ -212,7 +212,7 @@ const Profile = () => {
               {achievements.map((ach) => (
                 <div key={ach.id} className={styles['profile__achievement-item']}>
                   <div className={`${styles['profile__ach-icon-box']} ${ach.active ? styles['profile__ach-icon-box--active'] : styles['profile__ach-icon-box--inactive']}`}>
-                    <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: ach.active ? "'FILL' 1" : "'FILL' 0" }}>
+                    <span className={`material-symbols-outlined ${styles['profile__ach-icon']}`} style={{ fontVariationSettings: ach.active ? "'FILL' 1" : "'FILL' 0" }}>
                       {ach.icon}
                     </span>
                   </div>
@@ -227,12 +227,12 @@ const Profile = () => {
         </section>
 
         {/* Logout Section */}
-        <section className="pt-4 pb-6">
+        <section className={styles['profile__logout-section']}>
           <button 
             onClick={logout}
             className={styles['profile__logout-btn']}
           >
-            <span className="material-symbols-outlined text-lg">logout</span>
+            <span className={`material-symbols-outlined ${styles['profile__logout-icon']}`}>logout</span>
             ออกจากระบบ
           </button>
         </section>

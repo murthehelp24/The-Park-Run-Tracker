@@ -86,7 +86,7 @@ const Dashboard = () => {
           <div className={styles['dashboard__alert-wrapper']}>
             <div className={`${styles['dashboard__alert-card']} glass-card`}>
               <div className={styles['dashboard__alert-icon-box']}>
-                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span className={`material-symbols-outlined ${styles['dashboard__alert-trophy-icon']}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                   emoji_events
                 </span>
               </div>
@@ -110,7 +110,7 @@ const Dashboard = () => {
             <div className={styles['dashboard__timer-ring-wrapper']}>
               <svg className={styles['dashboard__timer-ring-svg']} viewBox="0 0 100 100">
                 <circle 
-                  className="text-slate-800 stroke-current" 
+                  className={styles['dashboard__ring-track']} 
                   cx="50" 
                   cy="50" 
                   fill="transparent" 
@@ -118,7 +118,7 @@ const Dashboard = () => {
                   strokeWidth="5"
                 />
                 <circle 
-                  className="text-orange-500 stroke-current progress-ring" 
+                  className={`${styles['dashboard__ring-progress']} progress-ring`} 
                   cx="50" 
                   cy="50" 
                   fill="transparent" 
@@ -139,7 +139,7 @@ const Dashboard = () => {
                 <h2 className={`${styles['dashboard__timer-text']} timer-glow`}>
                   {formatTime(lapSeconds)}
                 </h2>
-                <div className="flex justify-center mt-1">
+                <div className={styles['dashboard__timer-icon-wrapper']}>
                   <span className={`material-symbols-outlined ${styles['dashboard__timer-icon']}`}>timer</span>
                 </div>
             </div>
@@ -154,7 +154,7 @@ const Dashboard = () => {
                 <span>กำลังบันทึก...</span>
               ) : (
                 <>
-                  <span className="material-symbols-outlined">stop_circle</span>
+                  <span className={`material-symbols-outlined ${styles['dashboard__finish-icon']}`}>stop_circle</span>
                   <span>บันทึกและจบการวิ่ง</span>
                 </>
               )}
@@ -163,9 +163,9 @@ const Dashboard = () => {
         ) : (
           <section className={`${styles['dashboard__empty-state']} glass-card`}>
             <div className={styles['dashboard__empty-icon-box']}>
-              <span className="material-symbols-outlined text-3xl">sensors</span>
+              <span className={`material-symbols-outlined ${styles['dashboard__empty-sensor-icon']}`}>sensors</span>
             </div>
-            <div className="space-y-2">
+            <div className={styles['dashboard__empty-text-group']}>
               <h3 className={styles['dashboard__empty-title']}>พร้อมเริ่มต้นวิ่ง</h3>
               <p className={styles['dashboard__empty-subtitle']}>
                 แตะสายรัดข้อมือ NFC ที่จุดสแกนในสนามเพื่อเริ่มจับเวลาวิ่งโดยอัตโนมัติ
@@ -181,28 +181,28 @@ const Dashboard = () => {
         {/* Metrics Grid */}
         <section className={styles['dashboard__grid']}>
           <div className={`${styles['dashboard__metric-card']} glass-card`}>
-            <span className="material-symbols-outlined text-orange-500 mb-1.5 text-xl">history</span>
+            <span className={`material-symbols-outlined ${styles['dashboard__metric-icon']}`}>history</span>
             <p className={styles['dashboard__metric-label']}>เวลารอบล่าสุด</p>
             <p className={styles['dashboard__metric-value']}>
               {laps.length > 0 ? formatTime(getLastLapTime()) : '--:--'}
             </p>
           </div>
           <div className={`${styles['dashboard__metric-card']} glass-card`}>
-            <span className="material-symbols-outlined text-orange-500 mb-1.5 text-xl">reorder</span>
+            <span className={`material-symbols-outlined ${styles['dashboard__metric-icon']}`}>reorder</span>
             <p className={styles['dashboard__metric-label']}>จำนวนรอบรวม</p>
             <p className={styles['dashboard__metric-value']}>
               {activeSession ? `${laps.length} รอบ` : '0 รอบ'}
             </p>
           </div>
           <div className={`${styles['dashboard__metric-card']} glass-card`}>
-            <span className="material-symbols-outlined text-orange-500 mb-1.5 text-xl">directions_run</span>
+            <span className={`material-symbols-outlined ${styles['dashboard__metric-icon']}`}>directions_run</span>
             <p className={styles['dashboard__metric-label']}>เวลารวมเซสชัน</p>
             <p className={styles['dashboard__metric-value']}>
               {activeSession ? formatTime(getTotalSessionDuration()) : '00:00'}
             </p>
           </div>
           <div className={`${styles['dashboard__metric-card']} glass-card`}>
-            <span className="material-symbols-outlined text-orange-500 mb-1.5 text-xl">speed</span>
+            <span className={`material-symbols-outlined ${styles['dashboard__metric-icon']}`}>speed</span>
             <p className={styles['dashboard__metric-label']}>เวลาเฉลี่ย/รอบ</p>
             <p className={styles['dashboard__metric-value']}>
               {laps.length > 0 ? formatTime(getAverageLapDuration()) : '--:--'}
@@ -211,16 +211,17 @@ const Dashboard = () => {
         </section>
 
         {/* Dynamic visualization */}
-        <section className="mt-4">
+        <section className={styles['dashboard__map-section']}>
           <div className={`${styles['dashboard__map-card']} glass-card`}>
             <div className={styles['dashboard__map-svg-wrapper']}>
-              <svg className="w-full h-full" viewBox="0 0 400 150">
+              <svg className={styles['dashboard__map-svg']} viewBox="0 0 400 150">
                 <path 
                   d="M40,75 C40,40 100,30 200,30 C300,30 360,40 360,75 C360,110 300,120 200,120 C100,120 40,110 40,75 Z" 
                   fill="none" 
                   stroke="#f97316" 
                   strokeWidth="3.5"
                   strokeDasharray="5,5"
+                  opacity="0.2"
                 />
                 <circle 
                   cx={activeSession ? 200 + 160 * Math.cos(lapSeconds / 10) : 200} 
@@ -232,7 +233,7 @@ const Dashboard = () => {
               </svg>
             </div>
             <div className={styles['dashboard__map-badge']}>
-              <span className="material-symbols-outlined text-orange-500 text-sm">location_on</span>
+              <span className={`material-symbols-outlined ${styles['dashboard__map-badge-icon']}`}>location_on</span>
               <span className={styles['dashboard__map-badge-text']}>
                 PARK RUN CIRCUIT · <span className={styles['dashboard__map-badge-km']}>{activeSession ? `${(laps.length * 0.4).toFixed(1)}KM` : '0.0KM'}</span>
               </span>
@@ -275,7 +276,7 @@ const Dashboard = () => {
           <section className={styles['dashboard__simulator-section']}>
             <div className={`${styles['dashboard__simulator-card']} glass-card`}>
               <div className={styles['dashboard__simulator-header']}>
-                <span className="material-symbols-outlined text-orange-500">developer_board</span>
+                <span className={`material-symbols-outlined ${styles['dashboard__simulator-icon']}`}>developer_board</span>
                 <span className={styles['dashboard__simulator-title']}>NFC SIMULATOR (DEV MODE)</span>
               </div>
               <p className={styles['dashboard__simulator-desc']}>
@@ -290,7 +291,7 @@ const Dashboard = () => {
                   <span>กำลังส่งข้อมูล...</span>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined">sensors</span>
+                    <span className={`material-symbols-outlined ${styles['dashboard__simulator-scan-icon']}`}>sensors</span>
                     <span>จำลองการแตะการ์ด (Simulate Tap)</span>
                   </>
                 )}

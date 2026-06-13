@@ -26,7 +26,8 @@ const httpServer = createServer(app);
 initSocket(httpServer);
 
 // ===== Middlewares =====
-app.use(cors());
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
 // ===== Routes =====

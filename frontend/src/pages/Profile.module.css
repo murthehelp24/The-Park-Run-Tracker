@@ -369,3 +369,25 @@
     opacity: 0;
   }
 }
+
+/* ── Classes replacing Tailwind utilities ── */
+
+.profile__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile__ach-icon {
+  font-size: 18px;
+}
+
+.profile__logout-section {
+  padding-top: 16px;
+  padding-bottom: 24px;
+}
+
+.profile__logout-icon {
+  font-size: 18px;
+}
+

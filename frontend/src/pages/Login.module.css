@@ -41,6 +41,13 @@
   font-size: 36px;
 }
 
+.login__logo-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
 .login__title-wrapper {
   display: flex;
   flex-direction: column;

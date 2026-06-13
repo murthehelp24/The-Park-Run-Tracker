@@ -45,12 +45,7 @@ const Register = () => {
         {/* Branding header */}
         <div className={styles['register__header']}>
           <div className={styles['register__logo-box']}>
-            <span
-              className={`material-symbols-outlined ${styles['register__logo-icon']}`}
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              bolt
-            </span>
+            <img src="/favicon.svg" alt="Logo" className={styles['register__logo-img']} />
           </div>
           <div className={styles['register__title-wrapper']}>
             <h1 className={styles['register__title']}>

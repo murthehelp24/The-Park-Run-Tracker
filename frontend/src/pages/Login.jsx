@@ -45,12 +45,7 @@ const Login = () => {
         {/* Logo and Greeting */}
         <div className={styles['login__header']}>
           <div className={styles['login__logo-box']}>
-            <span 
-              className={`material-symbols-outlined ${styles['login__logo-icon']}`} 
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              bolt
-            </span>
+            <img src="/favicon.svg" alt="Logo" className={styles['login__logo-img']} />
           </div>
           <div className={styles['login__title-wrapper']}>
             <h1 className={styles['login__title']}>

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '../store/useAuthStore';
+import { useHistoryStore } from '../store/useHistoryStore';
 import { assignWristbandAPI, deleteWristbandAPI } from '../services/api';
 import TopAppBar from '../components/TopAppBar';
 import BottomNavBar from '../components/BottomNavBar';
@@ -16,11 +17,25 @@ const ThemeSwal = Swal.mixin({
   }
 });
 
+const formatTime = (totalSeconds) => {
+  if (!totalSeconds) return '--:--';
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
 const Profile = () => {
   const { user, wristband, logout, updateWristbandState } = useAuthStore();
+  const { totalLaps, averageLapTime, fetchHistory } = useHistoryStore();
   const [nfcUid, setNfcUid] = useState('');
   const [isBinding, setIsBinding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchHistory(user.id);
+    }
+  }, [user, fetchHistory]);
 
   const handleBindWristband = async (e) => {
     e.preventDefault();
@@ -144,6 +159,38 @@ const Profile = () => {
               {user ? `${user.firstName} ${user.lastName}` : 'นักวิ่ง'}
             </h2>
             <p className={styles['profile__profile-email']}>{user?.email}</p>
+          </div>
+        </section>
+
+        {/* Total Stats Section */}
+        <section className={styles['profile__section']}>
+          <h3 className={styles['profile__section-title']}>
+            สถิติรวม
+          </h3>
+          <div className={styles['profile__stats-grid']}>
+            <div className={`${styles['profile__stat-card']} glass-card`}>
+              <span className={`material-symbols-outlined ${styles['profile__stat-icon']}`}>
+                directions_run
+              </span>
+              <div className={styles['profile__stat-meta']}>
+                <span className={styles['profile__stat-label']}>ระยะทางรวมทั้งหมด</span>
+                <span className={styles['profile__stat-value']}>
+                  {(totalLaps * 0.4).toFixed(1)} <span className={styles['profile__stat-unit']}>กม.</span>
+                </span>
+              </div>
+            </div>
+            
+            <div className={`${styles['profile__stat-card']} glass-card`}>
+              <span className={`material-symbols-outlined ${styles['profile__stat-icon']}`}>
+                speed
+              </span>
+              <div className={styles['profile__stat-meta']}>
+                <span className={styles['profile__stat-label']}>เวลาเฉลี่ยต่อรอบ</span>
+                <span className={styles['profile__stat-value']}>
+                  {averageLapTime > 0 ? formatTime(averageLapTime) : '--:--'} <span className={styles['profile__stat-unit']}>นาที</span>
+                </span>
+              </div>
+            </div>
           </div>
         </section>
 

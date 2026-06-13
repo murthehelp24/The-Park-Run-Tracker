@@ -364,7 +364,9 @@
 }
 
 @keyframes ping-brand-small {
-  75%, 100% {
+
+  75%,
+  100% {
     transform: scale(3);
     opacity: 0;
   }
@@ -391,3 +393,58 @@
   font-size: 18px;
 }
 
+/* --- Stats Grid Styles --- */
+.profile__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.profile__stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.profile__stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+.profile__stat-icon {
+  font-size: 24px;
+  color: var(--color-primary);
+  background-color: rgba(249, 115, 22, 0.1);
+  padding: 8px;
+  border-radius: var(--radius-full);
+}
+
+.profile__stat-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile__stat-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.profile__stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+
+.profile__stat-unit {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}

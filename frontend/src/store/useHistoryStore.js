@@ -10,6 +10,7 @@ export const useHistoryStore = create((set, get) => ({
   totalSessions: 0,
   totalLaps: 0,
   personalBest: 0,
+  averageLapTime: 0,
 
   // --- Actions ---
   fetchHistory: async (userId) => {
@@ -28,8 +29,8 @@ export const useHistoryStore = create((set, get) => ({
           totalLaps: totalLapsCount,
         });
 
-        // Calculate Personal Best
-        await get().calculatePersonalBest(allSessions);
+        // Calculate Personal Best & Average Lap Time
+        await get().calculateStats(allSessions);
       }
     } catch (err) {
       console.error("Failed to load history:", err);
@@ -38,9 +39,11 @@ export const useHistoryStore = create((set, get) => ({
     }
   },
 
-  calculatePersonalBest: async (allSessions) => {
+  calculateStats: async (allSessions) => {
     try {
       let pbSec = Infinity;
+      let totalDurationSec = 0;
+      let totalLapsCount = 0;
       const promises = allSessions.map(s => getSessionLapsAPI(s.id));
       const results = await Promise.all(promises);
       
@@ -50,13 +53,18 @@ export const useHistoryStore = create((set, get) => ({
             if (lap.lapDuration < pbSec) {
               pbSec = lap.lapDuration;
             }
+            totalDurationSec += lap.lapDuration;
+            totalLapsCount++;
           });
         }
       });
       
-      set({ personalBest: pbSec === Infinity ? 0 : pbSec });
+      set({ 
+        personalBest: pbSec === Infinity ? 0 : pbSec,
+        averageLapTime: totalLapsCount > 0 ? Math.floor(totalDurationSec / totalLapsCount) : 0
+      });
     } catch (e) {
-      console.error("Failed to calculate personal best lap:", e);
+      console.error("Failed to calculate stats:", e);
     }
   },
 
@@ -96,6 +104,7 @@ export const useHistoryStore = create((set, get) => ({
       totalSessions: 0,
       totalLaps: 0,
       personalBest: 0,
+      averageLapTime: 0,
     });
   }
 }));

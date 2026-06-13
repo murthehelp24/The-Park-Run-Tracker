@@ -7,10 +7,25 @@ let io;
  * เรียกใช้ครั้งเดียวตอน server เริ่มทำงาน
  */
 export const initSocket = (httpServer) => {
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000'
+  ];
+  if (process.env.FRONTEND_URL) {
+    const envOrigins = process.env.FRONTEND_URL.split(',').map(o => o.trim());
+    allowedOrigins.push(...envOrigins);
+  }
+
   io = new Server(httpServer, {
     cors: {
-      origin: FRONTEND_URL,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: ['GET', 'POST'],
     },
   });

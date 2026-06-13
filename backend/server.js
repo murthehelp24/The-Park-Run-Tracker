@@ -26,8 +26,25 @@ const httpServer = createServer(app);
 initSocket(httpServer);
 
 // ===== Middlewares =====
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-app.use(cors({ origin: FRONTEND_URL }));
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000'
+];
+if (process.env.FRONTEND_URL) {
+  const envOrigins = process.env.FRONTEND_URL.split(',').map(o => o.trim());
+  allowedOrigins.push(...envOrigins);
+}
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
 app.use(express.json());
 
 // ===== Routes =====

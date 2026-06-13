@@ -11,6 +11,9 @@ export const useAuthStore = create((set, get) => ({
 
   // --- Actions ---
   initializeAuth: async () => {
+    // Check if the URL contains hash params indicating a redirect callback from Google OAuth
+    const isHandlingRedirect = window.location.hash.includes('access_token') || window.location.href.includes('code=');
+
     // 1. Listen for Supabase auth state change (Google OAuth callback redirect)
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
@@ -34,6 +37,13 @@ export const useAuthStore = create((set, get) => ({
           }
         } catch (err) {
           console.error("Failed to sync Google user with backend:", err);
+        } finally {
+          set({ loading: false });
+        }
+      } else {
+        // If we were expecting a redirect but session is null, end loading state
+        if (isHandlingRedirect) {
+          set({ loading: false });
         }
       }
     });
@@ -52,7 +62,11 @@ export const useAuthStore = create((set, get) => ({
         get().logout();
       }
     }
-    set({ loading: false });
+    
+    // Only set loading to false here if we are not currently processing a Google OAuth redirect
+    if (!isHandlingRedirect) {
+      set({ loading: false });
+    }
   },
 
   fetchWristband: async (userId) => {
